@@ -3,19 +3,20 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { Box, Container } from '@mui/system'
 import axios from 'axios'
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from "@hookform/resolvers/yup"
 
 import * as yup from "yup"
 import { registerSchema } from '../../validation/Registervalid'
+import CircularProgress from '@mui/material/CircularProgress'
 
 function Register() {
 
+const [serverError,setserverError] = useState([]);
 
-  
-  const{register,handleSubmit, formState: { errors },}=useForm({
-        resolver: yupResolver(registerSchema),
+  const{register,handleSubmit, formState: { errors,isSubmitting },}=useForm({
+        resolver: yupResolver(registerSchema),mode:"onBlur"
 
   });
 
@@ -24,10 +25,11 @@ function Register() {
   const registerhandle = async (valuse)=>{
     try{
       console.log(valuse)
-   const responce = await axios.post('https://knowledgeshop.runasp.net/api/auth/Account/Register',valuse);
-   console.log(responce);
+   const response = await axios.post('https://knowledgeshop.runasp.net/api/auth/Account/Register',valuse);
+   console.log(response);
 }catch(error){
-console.log(error);
+  setserverError(error.response.data.errors)
+console.log(error.response)
 }finally{
 
 }
@@ -38,6 +40,13 @@ console.log(error);
        <Container>
          <Box Container maxWidth="sm" sx={{padding:"30px"}}>
       <Typography component={'h1'} variant='h2' >Register Page :</Typography>
+      {serverError?.length > 0 && (
+        serverError.map((err)=>{
+        return <Typography sx={{color:"red"}}>{err}</Typography>
+        })
+
+
+      )}
      </Box>
 
        <Box component={'form'} onSubmit={handleSubmit(registerhandle)} sx={{padding:"30px", display:"flex", flexDirection:"column", gap:"13px", alignItems:"center"}}>
@@ -46,7 +55,7 @@ console.log(error);
        <TextField {...register('email')} fullWidth label="email" variant="filled" error={errors.email} helperText={errors.email?.message}/>
        <TextField {...register('password')} fullWidth label="password" variant="filled" error={errors.password} helperText={errors.password?.message}/>
        <TextField {...register('phoneNumber')} fullWidth label="phoneNumber" variant="filled" error={errors.phoneNumber} helperText={errors.phoneNumber?.message}/>
-<Button variant="outlined" type='submit'>Submit</Button>
+<Button variant="outlined" type='submit'>  {isSubmitting?<CircularProgress></CircularProgress>:"Submit"} </Button>
 
 
        </Box>
